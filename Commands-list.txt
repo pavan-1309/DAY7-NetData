@@ -1,0 +1,39 @@
+# Run Netdata container
+sudo docker run -d --name=netdata \
+  -p 19999:19999 \
+  --cap-add SYS_PTRACE \
+  --cap-add SYS_ADMIN \
+  --security-opt apparmor=unconfined \
+  -v netdataconfig:/etc/netdata \
+  -v netdatalib:/var/lib/netdata \
+  -v netdatacache:/var/cache/netdata \
+  -v /etc/passwd:/host/etc/passwd:ro \
+  -v /etc/group:/host/etc/group:ro \
+  -v /etc/localtime:/etc/localtime:ro \
+  -v /proc:/host/proc:ro \
+  -v /sys:/host/sys:ro \
+  -v /etc/os-release:/host/etc/os-release:ro \
+  -v /var/log:/host/var/log:ro \
+  -v /var/run/docker.sock:/var/run/docker.sock:ro \
+  -v /run/dbus:/run/dbus:ro \
+  --restart unless-stopped \
+  netdata/netdata
+
+# Install stress utility
+sudo apt install -y stress
+
+# Run CPU stress test for 60 seconds
+stress --cpu 4 --timeout 60s
+
+# Enable Netdata service to start on boot
+sudo systemctl enable netdata
+
+# Start Netdata service
+sudo systemctl start netdata
+
+# View Netdata error logs
+cat /var/log/netdata/error.log
+
+# View Netdata access logs
+cat /var/log/netdata/access.log
+
